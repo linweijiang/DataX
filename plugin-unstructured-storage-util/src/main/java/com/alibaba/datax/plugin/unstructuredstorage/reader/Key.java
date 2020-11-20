@@ -28,4 +28,5 @@ public class Key {
 
 	public static final String CSV_READER_CONFIG = "csvReaderConfig";
 
+	public static final String LINE_DELIMITER = "lineDelimiter";
 }

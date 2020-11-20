@@ -20,13 +20,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.charset.UnsupportedCharsetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -175,12 +169,12 @@ public class TxtFileReader extends Reader {
 			String delimiterInStr = this.originConfig
 					.getString(com.alibaba.datax.plugin.unstructuredstorage.reader.Key.FIELD_DELIMITER);
 			// warn: if have, length must be one
-			if (null != delimiterInStr && 1 != delimiterInStr.length()) {
-				throw DataXException.asDataXException(
-						UnstructuredStorageReaderErrorCode.ILLEGAL_VALUE,
-						String.format("仅仅支持单字符切分, 您配置的切分为 : [%s]",
-								delimiterInStr));
-			}
+//			if (null != delimiterInStr && 1 != delimiterInStr.length()) {
+//				throw DataXException.asDataXException(
+//						UnstructuredStorageReaderErrorCode.ILLEGAL_VALUE,
+//						String.format("仅仅支持单字符切分, 您配置的切分为 : [%s]",
+//								delimiterInStr));
+//			}
 
 		}
 
@@ -398,11 +392,21 @@ public class TxtFileReader extends Reader {
 			for (String fileName : this.sourceFiles) {
 				LOG.info(String.format("reading file : [%s]", fileName));
 				InputStream inputStream;
+				Scanner scanner = null;
 				try {
-					inputStream = new FileInputStream(fileName);
-					UnstructuredStorageReaderUtil.readFromStream(inputStream,
-							fileName, this.readerSliceConfig, recordSender,
-							this.getTaskPluginCollector());
+					String lineDelimiter = this.readerSliceConfig.getString(
+							com.alibaba.datax.plugin.unstructuredstorage.reader.Key.LINE_DELIMITER, null);
+					if (lineDelimiter != null){
+						scanner = new Scanner(new File(fileName));
+						UnstructuredStorageReaderUtil.readFromScanner(scanner,
+								fileName, this.readerSliceConfig, recordSender,
+								this.getTaskPluginCollector());
+					}else {
+						inputStream = new FileInputStream(fileName);
+						UnstructuredStorageReaderUtil.readFromStream(inputStream,
+								fileName, this.readerSliceConfig, recordSender,
+								this.getTaskPluginCollector());
+					}
 					recordSender.flush();
 				} catch (FileNotFoundException e) {
 					// warn: sock 文件无法read,能影响所有文件的传输,需要用户自己保证
@@ -411,6 +415,10 @@ public class TxtFileReader extends Reader {
 					LOG.error(message);
 					throw DataXException.asDataXException(
 							TxtFileReaderErrorCode.OPEN_FILE_ERROR, message);
+				}finally {
+					if (scanner != null){
+						scanner.close();
+					}
 				}
 			}
 			LOG.debug("end read source files...");
