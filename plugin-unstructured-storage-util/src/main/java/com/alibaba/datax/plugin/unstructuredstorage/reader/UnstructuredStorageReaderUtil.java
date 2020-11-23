@@ -245,7 +245,7 @@ public class UnstructuredStorageReaderUtil {
 		scanner.useDelimiter(lineDelimiter);
 		while (scanner.hasNext()){
 			String line = scanner.next();
-			String[] parseRows = line.split(fieldDelimiter);
+			String[] parseRows = line.split(fieldDelimiter, -1);
 			UnstructuredStorageReaderUtil.transportOneRecord(recordSender,
 					columnEntry, parseRows, nullFormat, taskPluginCollector);
 		}
