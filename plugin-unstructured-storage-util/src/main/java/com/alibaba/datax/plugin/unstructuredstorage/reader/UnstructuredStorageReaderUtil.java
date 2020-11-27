@@ -421,6 +421,9 @@ public class UnstructuredStorageReaderUtil {
 							break;
 						case LONG:
 							try {
+								if (StringUtils.isEmpty(columnValue)){
+									columnValue = "0";
+								}
 								columnGenerated = new LongColumn(columnValue);
 							} catch (Exception e) {
 								throw new IllegalArgumentException(String.format(
